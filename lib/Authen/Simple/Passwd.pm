@@ -5,6 +5,7 @@ use warnings;
 use bytes;
 use base 'Authen::Simple::Adapter';
 
+use Config           qw[];
 use Crypt::PasswdMD5 qw[];
 use Digest::SHA1     qw[];
 use Digest::MD5      qw[];
@@ -12,7 +13,7 @@ use Fcntl            qw[:flock];
 use IO::File         qw[O_RDONLY];
 use Params::Validate qw[];
 
-our $VERSION = 0.1;
+our $VERSION = 0.2;
 
 __PACKAGE__->options({
     passwd => {
@@ -20,8 +21,8 @@ __PACKAGE__->options({
         optional => 0
     },
     flock => {
-        type     => Params::Validate::OBJECT,
-        default  => 1,
+        type     => Params::Validate::SCALAR,
+        default  => ( $Config::Config{d_flock} ) ? 1 : 0,
         optional => 1
     },
     allow => {
@@ -30,7 +31,12 @@ __PACKAGE__->options({
         optional => 1,
         callbacks => {
             'valid option' => sub {
-                $_[0] =~ /^apr1|crypt|md5|plain|sha$/;
+
+                foreach ( @{ $_[0] } ) {
+                    return 0 unless $_ =~ /^apr1|crypt|md5|plain|sha$/;
+                }
+
+                return 1;
             }
         }
     }
@@ -225,7 +231,7 @@ password. Required.
     
 =item * flock
 
-A boolean to enable or disable the usage of C<flock()>. Defaults to true.
+A boolean to enable or disable the usage of C<flock()>. Defaults to C<d_flock> in L<Config>.
 
     flock => 0
     

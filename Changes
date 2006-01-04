@@ -1,4 +1,9 @@
 Revision history for Perl extension Authen::Simple::Passwd
 
+0.02 2006-01-04 00:00
+    - fixed parameters spec.
+    - flock defaults to d_flock in Config.pm
+    - added basic tests
+
 0.01 2006-01-03 00:00
     - first release

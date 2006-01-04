@@ -1,6 +1,6 @@
 ---
 name: Authen-Simple-Passwd
-version: 0.1
+version: 0.2
 author:
   - Christian Hansen C<ch@ngmedia.com>
 abstract: Simple ActiveDirectory authentication
@@ -14,5 +14,5 @@ requires:
 provides:
   Authen::Simple::Passwd:
     file: lib/Authen/Simple/Passwd.pm
-    version: 0.1
+    version: 0.2
 generated_by: Module::Build version 0.2611

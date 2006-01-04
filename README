@@ -45,7 +45,7 @@ METHODS
                     passwd => '/var/www/.htpasswd'
     
         * flock A boolean to enable or disable the usage of "flock()".
-                Defaults to true.
+                Defaults to "d_flock" in Config.
 
                     flock => 0
     
