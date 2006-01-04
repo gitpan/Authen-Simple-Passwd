@@ -1,0 +1,124 @@
+NAME
+    Authen::Simple::Passwd - Simple ActiveDirectory authentication
+
+SYNOPSIS
+        use Authen::Simple::Passwd;
+    
+        my $passwd = Authen::Simple::Passwd->new( 
+            passwd => '/etc/passwd'
+        );
+    
+        if ( $passwd->authenticate( $username, $password ) ) {
+            # successfull authentication
+        }
+    
+        # or as a mod_perl Authen handler
+    
+        PerlModule Authen::Simple::Apache
+        PerlModule Authen::Simple::Passwd
+
+        PerlSetVar AuthenSimplePasswd_passwd "/etc/passwd"
+
+        <Location /protected>
+          PerlAuthenHandler Authen::Simple::Passwd
+          AuthType          Basic
+          AuthName          "Protected Area"
+          Require           valid-user
+        </Location>    
+
+DESCRIPTION
+    Authenticate against a passwd file.
+
+METHODS
+    * new
+        This method takes a hash of parameters. The following options are
+        valid:
+
+        * passwd
+                Path to passwd file to authenticate against. Any standard
+                passwd file that has records seperated with newline and
+                fields seperated by ":" is supported. First field is
+                expected to be username and second field, plain or encrypted
+                password. Required.
+
+                    passwd => '/etc/passwd'
+                    passwd => '/var/www/.htpasswd'
+    
+        * flock A boolean to enable or disable the usage of "flock()".
+                Defaults to true.
+
+                    flock => 0
+    
+        * allow An arrayref containing allowed hashing methods. Valid
+                options are "apr1", "crypt", "plain", "md5" or "sha". By
+                default all are allowed.
+
+                    allow => [ 'md5', 'sha' ]
+
+        * log   Any object that supports "debug", "info", "error" and
+                "warn".
+
+                    log => Log::Log4perl->get_logger('Authen::Simple::Passwd')
+
+    * authenticate( $username, $password )
+        Returns true on success and false on failure. Authentication
+        attempts with a username that begins with a hyphen "-" will always
+        return false.
+
+PASSWORD HASHING ALGORITHMS
+    * DES Extended Format
+        Platform dependent. Should work on most UNIX-like and Win32 systems.
+
+            #!/usr/bin/perl
+    
+            my $password  = 'DES Extended';
+            my $salt      = '_0A7AYX6B4/SPbM9NK6k';
+            my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
+    
+            print "DES Extended is supported: $supported\n";
+    
+    * Modular Crypt Format
+
+        * $1$ MD5
+                Platform independent.
+
+        * $2$ Blowfish
+                Platform dependent.
+
+        * $3$ NT-Hash
+                Platform dependent.
+
+    * Traditional Crypt/DES
+        Platform dependent. Should work on most UNIX-like and Win32 systems.
+
+            #!/usr/bin/perl
+    
+            my $password  = 'Traditional Crypt';
+            my $salt      = 'X5XLgrevYDdLc';
+            my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
+    
+            print "Traditional Crypt is supported: $supported\n";
+
+    * Apache
+
+        * $apr1$
+                Platform independent.
+
+    * LDAP Directory Interchange Format
+
+        * {SHA} Platform independent.
+
+SEE ALSO
+    Authen::Simple.
+
+    passwd(5).
+
+    crypt(3).
+
+AUTHOR
+    Christian Hansen "ch@ngmedia.com"
+
+COPYRIGHT
+    This program is free software, you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
