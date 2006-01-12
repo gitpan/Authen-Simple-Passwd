@@ -1,5 +1,5 @@
 NAME
-    Authen::Simple::Passwd - Simple ActiveDirectory authentication
+    Authen::Simple::Passwd - Simple Passwd authentication
 
 SYNOPSIS
         use Authen::Simple::Passwd;

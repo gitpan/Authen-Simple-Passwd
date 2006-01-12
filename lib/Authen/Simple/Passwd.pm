@@ -13,22 +13,22 @@ use Fcntl            qw[:flock];
 use IO::File         qw[O_RDONLY];
 use Params::Validate qw[];
 
-our $VERSION = 0.2;
+our $VERSION = 0.3;
 
 __PACKAGE__->options({
     passwd => {
-        type     => Params::Validate::SCALAR,
-        optional => 0
+        type      => Params::Validate::SCALAR,
+        optional  => 0
     },
     flock => {
-        type     => Params::Validate::SCALAR,
-        default  => ( $Config::Config{d_flock} ) ? 1 : 0,
-        optional => 1
+        type      => Params::Validate::SCALAR,
+        default   => ( $Config::Config{d_flock} ) ? 1 : 0,
+        optional  => 1
     },
     allow => {
-        type     => Params::Validate::ARRAYREF,
-        default  => [ qw( apr1 crypt md5 plain sha ) ],
-        optional => 1,
+        type      => Params::Validate::ARRAYREF,
+        default   => [ qw( apr1 crypt md5 plain sha ) ],
+        optional  => 1,
         callbacks => {
             'valid option' => sub {
 
@@ -164,7 +164,7 @@ sub check {
         return 0;
     }
 
-    $self->log->debug( qq/Successfully authenticated user '$username'./)
+    $self->log->debug( qq/Successfully authenticated user '$username'./ )
       if $self->log;
 
     return 1;
@@ -176,7 +176,7 @@ __END__
 
 =head1 NAME
 
-Authen::Simple::Passwd - Simple ActiveDirectory authentication
+Authen::Simple::Passwd - Simple Passwd authentication
 
 =head1 SYNOPSIS
 
