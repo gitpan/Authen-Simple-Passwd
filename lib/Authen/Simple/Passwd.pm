@@ -13,7 +13,7 @@ use Fcntl            qw[:flock];
 use IO::File         qw[O_RDONLY];
 use Params::Validate qw[];
 
-our $VERSION = 0.3;
+our $VERSION = 0.4;
 
 __PACKAGE__->options({
     passwd => {

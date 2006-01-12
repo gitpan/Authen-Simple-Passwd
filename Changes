@@ -1,5 +1,8 @@
 Revision history for Perl extension Authen::Simple::Passwd
 
+0.4 2006-01-12 00:00
+    - Fixed MANIFEST
+
 0.3 2006-01-12 00:00
     - POD fixes. No functional changes.
 
