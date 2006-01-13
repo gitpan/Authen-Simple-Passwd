@@ -1,18 +1,15 @@
 ---
 name: Authen-Simple-Passwd
-version: 0.4
+version: 0.5
 author:
   - 'Christian Hansen C<ch@ngmedia.com>'
 abstract: Simple Passwd authentication
 license: perl
 requires:
-  Authen::Simple: 0
-  Crypt::PasswdMD5: 0
-  Digest::MD5: 0
-  Digest::SHA1: 0
+  Authen::Simple: 0.3
   IO::File: 0
 provides:
   Authen::Simple::Passwd:
     file: lib/Authen/Simple/Passwd.pm
-    version: 0.4
+    version: 0.5
 generated_by: Module::Build version 0.2611

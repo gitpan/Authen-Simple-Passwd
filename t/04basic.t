@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 8;
 
 use_ok('Authen::Simple::Passwd');
 
@@ -9,8 +9,3 @@ ok(   $passwd->authenticate( 'md5',   'md5'   ), 'Successfully authenticated usi
 ok(   $passwd->authenticate( 'plain', 'plain' ), 'Successfully authenticated using plain' );
 ok(   $passwd->authenticate( 'sha',   'sha'   ), 'Successfully authenticated using {SHA}' );
 ok( ! $passwd->authenticate( '-',     '-'     ), 'Usernames with hyphens is not allowed' );
-
-ok( $passwd = Authen::Simple::Passwd->new( passwd => 't/etc/passwd', allow => [ 'md5', 'sha' ] ) );
-ok( ! $passwd->authenticate( 'crypt', 'crypt' ), 'Crypt is not allowed' );
-ok( ! $passwd->authenticate( 'plain', 'plain' ), 'Plain is not allowed' );
-ok(   $passwd->authenticate( 'md5',   'md5'   ), 'Successfully authenticated using md5' );

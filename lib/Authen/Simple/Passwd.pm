@@ -6,14 +6,11 @@ use bytes;
 use base 'Authen::Simple::Adapter';
 
 use Config           qw[];
-use Crypt::PasswdMD5 qw[];
-use Digest::SHA1     qw[];
-use Digest::MD5      qw[];
 use Fcntl            qw[:flock];
 use IO::File         qw[O_RDONLY];
 use Params::Validate qw[];
 
-our $VERSION = 0.4;
+our $VERSION = 0.5;
 
 __PACKAGE__->options({
     passwd => {
@@ -27,18 +24,7 @@ __PACKAGE__->options({
     },
     allow => {
         type      => Params::Validate::ARRAYREF,
-        default   => [ qw( apr1 crypt md5 plain sha ) ],
         optional  => 1,
-        callbacks => {
-            'valid option' => sub {
-
-                foreach ( @{ $_[0] } ) {
-                    return 0 unless $_ =~ /^apr1|crypt|md5|plain|sha$/;
-                }
-
-                return 1;
-            }
-        }
     }
 });
 
@@ -133,30 +119,7 @@ sub check {
         return 0;
     }
 
-    my $match = 0;
-    my %allow = map { $_ => 1 } @{ $self->allow };
-
-    if ( !$match && $allow{apr1} && $encrypted =~ /^\$apr1\$/ ) {
-        $match++ if Crypt::PasswdMD5::apache_md5_crypt( $password, $encrypted ) eq $encrypted;
-    }
-
-    if ( !$match && $allow{md5} && $encrypted =~ /^\$1\$/ ) {
-        $match++ if Crypt::PasswdMD5::unix_md5_crypt( $password, $encrypted ) eq $encrypted;
-    }
-
-    if ( !$match && $allow{sha} && $encrypted =~ /^\{SHA\}/ ) {
-        $match++ if sprintf( '{SHA}%s=', Digest::SHA1::sha1_base64($password) ) eq $encrypted;
-    }
-
-    if ( !$match && $allow{crypt} ) {
-        $match++ if crypt( $password, $encrypted ) eq $encrypted;
-    }
-
-    if ( !$match && $allow{plain} ) {
-        $match++ if $password eq $encrypted;
-    }
-
-    unless ( $match ) {
+    unless ( $self->check_password( $password, $encrypted ) ) {
 
         $self->log->debug( qq/Failed to authenticate user '$username'. Reason: 'Invalid credentials'/ )
           if $self->log;
@@ -214,8 +177,7 @@ Authenticate against a passwd file.
 
 =item * new
 
-This method takes a hash of parameters.  The following options are
-valid:
+This method takes a hash of parameters. The following options are valid:
 
 =over 8
 
@@ -234,13 +196,6 @@ password. Required.
 A boolean to enable or disable the usage of C<flock()>. Defaults to C<d_flock> in L<Config>.
 
     flock => 0
-    
-=item * allow
-
-An arrayref containing allowed hashing methods. Valid options are C<apr1>, C<crypt>, 
-C<plain>, C<md5> or C<sha>. By default all are allowed.
-
-    allow => [ 'md5', 'sha' ]
 
 =item * log
 
@@ -257,81 +212,13 @@ hyphen C<-> will always return false.
 
 =back
 
-=head1 PASSWORD HASHING ALGORITHMS
-
-=over 4
-
-=item * DES Extended Format
-
-Platform dependent. Should work on most UNIX-like and Win32 systems.
-
-    #!/usr/bin/perl
-    
-    my $password  = 'DES Extended';
-    my $salt      = '_0A7AYX6B4/SPbM9NK6k';
-    my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
-    
-    print "DES Extended is supported: $supported\n";
-    
-=item * Modular Crypt Format
-
-=over 8
-
-=item * $1$ MD5
-
-Platform independent.
-
-=item * $2$ Blowfish
-
-Platform dependent.
-
-=item * $3$ NT-Hash
-
-Platform dependent.
-
-=back
-
-=item * Traditional Crypt/DES
-
-Platform dependent. Should work on most UNIX-like and Win32 systems.
-
-    #!/usr/bin/perl
-    
-    my $password  = 'Traditional Crypt';
-    my $salt      = 'X5XLgrevYDdLc';
-    my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
-    
-    print "Traditional Crypt is supported: $supported\n";
-
-=item * Apache
-
-=over 8
-
-=item * $apr1$
-
-Platform independent.
-
-=back
-
-=item * LDAP Directory Interchange Format
-
-=over 8
-
-=item * {SHA}
-
-Platform independent.
-
-=back
-
-=back
-
 =head1 SEE ALSO
 
 L<Authen::Simple>.
 
-L<passwd(5)>.
+L<Authen::Simple::Password>.
 
-L<crypt(3)>.
+L<passwd(5)>.
 
 =head1 AUTHOR
 

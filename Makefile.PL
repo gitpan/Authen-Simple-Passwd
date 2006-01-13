@@ -5,10 +5,7 @@ WriteMakefile
           'NAME' => 'Authen::Simple::Passwd',
           'VERSION_FROM' => 'lib/Authen/Simple/Passwd.pm',
           'PREREQ_PM' => {
-                           'Authen::Simple' => '0',
-                           'Crypt::PasswdMD5' => '0',
-                           'Digest::MD5' => '0',
-                           'Digest::SHA1' => '0',
+                           'Authen::Simple' => '0.3',
                            'IO::File' => '0'
                          },
           'INSTALLDIRS' => 'site',

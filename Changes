@@ -1,5 +1,9 @@
 Revision history for Perl extension Authen::Simple::Passwd
 
+0.5 2006-01-13 00:00
+    - Removed allow option
+    - Use Authen::Simple::Password for password verification
+
 0.4 2006-01-12 00:00
     - Fixed MANIFEST
 

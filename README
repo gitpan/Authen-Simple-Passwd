@@ -48,12 +48,6 @@ METHODS
                 Defaults to "d_flock" in Config.
 
                     flock => 0
-    
-        * allow An arrayref containing allowed hashing methods. Valid
-                options are "apr1", "crypt", "plain", "md5" or "sha". By
-                default all are allowed.
-
-                    allow => [ 'md5', 'sha' ]
 
         * log   Any object that supports "debug", "info", "error" and
                 "warn".
@@ -65,55 +59,12 @@ METHODS
         attempts with a username that begins with a hyphen "-" will always
         return false.
 
-PASSWORD HASHING ALGORITHMS
-    * DES Extended Format
-        Platform dependent. Should work on most UNIX-like and Win32 systems.
-
-            #!/usr/bin/perl
-    
-            my $password  = 'DES Extended';
-            my $salt      = '_0A7AYX6B4/SPbM9NK6k';
-            my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
-    
-            print "DES Extended is supported: $supported\n";
-    
-    * Modular Crypt Format
-
-        * $1$ MD5
-                Platform independent.
-
-        * $2$ Blowfish
-                Platform dependent.
-
-        * $3$ NT-Hash
-                Platform dependent.
-
-    * Traditional Crypt/DES
-        Platform dependent. Should work on most UNIX-like and Win32 systems.
-
-            #!/usr/bin/perl
-    
-            my $password  = 'Traditional Crypt';
-            my $salt      = 'X5XLgrevYDdLc';
-            my $supported = ( crypt( $password, $salt ) eq $salt ) ? 'yes' : 'no';
-    
-            print "Traditional Crypt is supported: $supported\n";
-
-    * Apache
-
-        * $apr1$
-                Platform independent.
-
-    * LDAP Directory Interchange Format
-
-        * {SHA} Platform independent.
-
 SEE ALSO
     Authen::Simple.
 
-    passwd(5).
+    Authen::Simple::Password.
 
-    crypt(3).
+    passwd(5).
 
 AUTHOR
     Christian Hansen "ch@ngmedia.com"
