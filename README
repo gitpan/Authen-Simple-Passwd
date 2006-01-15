@@ -5,7 +5,7 @@ SYNOPSIS
         use Authen::Simple::Passwd;
     
         my $passwd = Authen::Simple::Passwd->new( 
-            passwd => '/etc/passwd'
+            path => '/etc/passwd'
         );
     
         if ( $passwd->authenticate( $username, $password ) ) {
@@ -17,7 +17,7 @@ SYNOPSIS
         PerlModule Authen::Simple::Apache
         PerlModule Authen::Simple::Passwd
 
-        PerlSetVar AuthenSimplePasswd_passwd "/etc/passwd"
+        PerlSetVar AuthenSimplePasswd_path "/etc/passwd"
 
         <Location /protected>
           PerlAuthenHandler Authen::Simple::Passwd
@@ -34,15 +34,14 @@ METHODS
         This method takes a hash of parameters. The following options are
         valid:
 
-        * passwd
-                Path to passwd file to authenticate against. Any standard
+        * path  Path to passwd file to authenticate against. Any standard
                 passwd file that has records seperated with newline and
                 fields seperated by ":" is supported. First field is
                 expected to be username and second field, plain or encrypted
                 password. Required.
 
-                    passwd => '/etc/passwd'
-                    passwd => '/var/www/.htpasswd'
+                    path => '/etc/passwd'
+                    path => '/var/www/.htpasswd'
     
         * flock A boolean to enable or disable the usage of "flock()".
                 Defaults to "d_flock" in Config.

@@ -5,28 +5,53 @@ use warnings;
 use bytes;
 use base 'Authen::Simple::Adapter';
 
+use Carp             qw[];
 use Config           qw[];
-use Fcntl            qw[:flock];
+use Fcntl            qw[LOCK_SH];
 use IO::File         qw[O_RDONLY];
 use Params::Validate qw[];
 
-our $VERSION = 0.5;
+our $VERSION = 0.6;
 
 __PACKAGE__->options({
-    passwd => {
+    path => {
         type      => Params::Validate::SCALAR,
-        optional  => 0
+        optional  => 1
     },
     flock => {
         type      => Params::Validate::SCALAR,
         default   => ( $Config::Config{d_flock} ) ? 1 : 0,
         optional  => 1
     },
-    allow => {
+    passwd => {  # deprecated
+        type      => Params::Validate::SCALAR,
+        optional  => 1
+    },
+    allow => {   # deprecated
         type      => Params::Validate::ARRAYREF,
         optional  => 1,
     }
 });
+
+sub init {
+    my ( $self, $params ) = @_;
+
+    my $path = $params->{path} ||= delete $params->{passwd};
+
+    unless ( -e $path ) {
+        Carp::croak( qq/Passwd path '$path' does not exist./ );
+    }
+
+    unless ( -f _ ) {
+        Carp::croak( qq/Passwd path '$path' is not a file./ );
+    }
+
+    unless ( -r _ ) {
+        Carp::croak( qq/Passwd path '$path' is not readable by effective uid '$>'./ );
+    }
+
+    return $self->SUPER::init($params);
+}
 
 sub check {
     my ( $self, $username, $password ) = @_;
@@ -39,37 +64,11 @@ sub check {
         return 0;
     }
 
-    my $passwd = $self->passwd;
+    my ( $path, $fh, $encrypted ) = ( $self->path, undef, undef );
 
-    unless ( -e $passwd) {
+    unless ( $fh = IO::File->new( $path, O_RDONLY ) ) {
 
-        $self->log->error( qq/passwd file '$passwd' does not exist./ )
-          if $self->log;
-
-        return 0;
-    }
-
-    unless ( -f _ ) {
-
-        $self->log->error( qq/passwd file '$passwd' is not a file./ )
-          if $self->log;
-
-        return 0;
-    }
-
-    unless ( -r _ ) {
-
-        $self->log->error( qq/passwd file '$passwd' is not readable by effective uid '$>'./ )
-          if $self->log;
-
-        return 0;
-    }
-
-    my $fh;
-
-    unless ( $fh = IO::File->new( $passwd, O_RDONLY ) ) {
-
-        $self->log->error( qq/Failed to open passwd '$passwd'. Reason: '$!'/ )
+        $self->log->error( qq/Failed to open passwd '$path'. Reason: '$!'/ )
           if $self->log;
 
         return 0;
@@ -77,13 +76,11 @@ sub check {
 
     unless ( !$self->flock || flock( $fh, LOCK_SH ) ) {
 
-        $self->log->error( qq/Failed to obtain a shared lock on '$passwd'. Reason: '$!'/ )
+        $self->log->error( qq/Failed to obtain a shared lock on passwd '$path'. Reason: '$!'/ )
           if $self->log;
 
         return 0;
     }
-
-    my $encrypted;
 
     while ( defined( $_ = $fh->getline ) ) {
 
@@ -98,7 +95,7 @@ sub check {
 
             $encrypted = $credentials[1];
 
-            $self->log->debug( qq/Found user '$username' in passwd '$passwd'./ )
+            $self->log->debug( qq/Found user '$username' in passwd '$path'./ )
               if $self->log;
 
             last;
@@ -107,13 +104,21 @@ sub check {
 
     unless ( $fh->close ) {
 
-        $self->log->warn( qq/Failed to close passwd '$passwd'. Reason: '$!'/ )
+        $self->log->warn( qq/Failed to close passwd '$path'. Reason: '$!'/ )
           if $self->log;
     }
 
     unless ( defined $encrypted ) {
 
-        $self->log->debug( qq/User '$username' was not found in '$passwd'./ )
+        $self->log->debug( qq/User '$username' was not found in passwd '$path'./ )
+          if $self->log;
+
+        return 0;
+    }
+
+    unless ( length $encrypted ) {
+
+        $self->log->debug( qq/Encrypted password for user '$username' is null./ )
           if $self->log;
 
         return 0;
@@ -146,7 +151,7 @@ Authen::Simple::Passwd - Simple Passwd authentication
     use Authen::Simple::Passwd;
     
     my $passwd = Authen::Simple::Passwd->new( 
-        passwd => '/etc/passwd'
+        path => '/etc/passwd'
     );
     
     if ( $passwd->authenticate( $username, $password ) ) {
@@ -158,7 +163,7 @@ Authen::Simple::Passwd - Simple Passwd authentication
     PerlModule Authen::Simple::Apache
     PerlModule Authen::Simple::Passwd
 
-    PerlSetVar AuthenSimplePasswd_passwd "/etc/passwd"
+    PerlSetVar AuthenSimplePasswd_path "/etc/passwd"
 
     <Location /protected>
       PerlAuthenHandler Authen::Simple::Passwd
@@ -181,15 +186,15 @@ This method takes a hash of parameters. The following options are valid:
 
 =over 8
 
-=item * passwd
+=item * path
 
 Path to passwd file to authenticate against. Any standard passwd file that 
 has records seperated with newline and fields seperated by C<:> is supported.
 First field is expected to be username and second field, plain or encrypted 
 password. Required.
 
-    passwd => '/etc/passwd'
-    passwd => '/var/www/.htpasswd'
+    path => '/etc/passwd'
+    path => '/var/www/.htpasswd'
     
 =item * flock
 
